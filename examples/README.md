@@ -2,13 +2,12 @@
 
 The `ballerinax/apple.appstore` connector provides practical examples illustrating usage in various scenarios.
 
-[//]: # (TODO: Add examples)
-1. 
-2. 
+1. [Beta testing setup](./beta_testing_setup/beta_testing_setup.md) - Create a TestFlight beta group for an app and invite a tester.
+2. [App review insights](./app_review_insights/app_review_insights.md) - Summarise the latest customer reviews of an app.
 
 ## Prerequisites
 
-[//]: # (TODO: Add prerequisites)
+Provide an App Store Connect API JSON Web Token (`token`) and the example's other settings in a `Config.toml` in the example directory.
 
 ## Running an example
 
