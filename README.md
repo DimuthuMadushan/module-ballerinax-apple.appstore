@@ -16,11 +16,11 @@ To use the Apple App Store connector, you need an Apple Developer account with a
 
 1. Sign in to [App Store Connect](https://appstoreconnect.apple.com/) as an Account Holder or Admin and open **Users and Access**, then the **Integrations** tab.
 
-2. Under **App Store Connect API**, generate a team API key with the access level your integration needs, and download the private key (`.p8` file). It can only be downloaded once.
+2. Under **App Store Connect API**, if API access has not been enabled for your team yet, the Account Holder must first request access. Once it is granted, generate a team API key with the access level your integration needs, and download the private key (`.p8` file). It can only be downloaded once.
 
 3. Note the **Issuer ID** shown at the top of the page and the **Key ID** of the key.
 
-4. Create a JSON Web Token (JWT) signed with the private key using the `ES256` algorithm. Set the `kid` header to the Key ID, and the `iss` claim to the Issuer ID, the `aud` claim to `appstoreconnect-v1`, and `exp` to at most 20 minutes after the issue time. The connector sends this token as a bearer token.
+4. Create a JSON Web Token (JWT) signed with the private key using the `ES256` algorithm. Set the `kid` header to the Key ID, and the `iss` claim to the Issuer ID, the `aud` claim to `appstoreconnect-v1`, `iat` to the issue time and `exp` to at most 20 minutes after it, both as Unix timestamps in seconds. The connector sends this token as a bearer token.
 
 ## Quickstart
 
@@ -62,7 +62,7 @@ To use the `apple.appstore` connector in your Ballerina application, update the 
 
 The `Apple App Store` connector provides practical examples illustrating usage in various scenarios. Explore these [examples](https://github.com/ballerina-platform/module-ballerinax-apple.appstore/tree/main/examples/), covering the following use cases:
 
-1. [Beta testing setup](examples/beta_testing_setup/beta_testing_setup.md) - Create a TestFlight beta group for an app and invite a tester.
+1. [Beta testing setup](examples/beta_testing_setup/beta_testing_setup.md) - Create a TestFlight beta group for an app and add a tester to it.
 2. [App review insights](examples/app_review_insights/app_review_insights.md) - Summarise the latest customer reviews of an app.
 
 ## Build from the source

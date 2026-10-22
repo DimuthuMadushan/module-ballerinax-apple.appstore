@@ -7,6 +7,9 @@ configurable string bundleIdentifier = ?;
 configurable int reviewCount = 100;
 
 public function main() returns error? {
+    if reviewCount < 1 || reviewCount > 200 {
+        return error(string `reviewCount must be between 1 and 200, the API's per-request maximum; got ${reviewCount}`);
+    }
     appstore:Client appStore = check new ({auth: {token}});
 
     // Step 1: Find the app by its bundle identifier.

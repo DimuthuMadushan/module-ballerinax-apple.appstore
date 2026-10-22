@@ -7,7 +7,7 @@ configurable string betaGroupName = ?;
 configurable string testerEmail = ?;
 configurable string testerFirstName = ?;
 configurable string testerLastName = ?;
-// Creating the beta group and inviting the tester change your App Store Connect account.
+// Creating the beta group and adding the tester change your App Store Connect account.
 configurable boolean applyChanges = false;
 
 public function main() returns error? {
@@ -43,7 +43,7 @@ public function main() returns error? {
         return;
     }
 
-    // Step 4: Invite the tester into the group.
+    // Step 4: Add the tester to the group.
     if applyChanges {
         appstore:BetaTesterResponse tester = check appStore->createBetaTester({
             data: {
@@ -52,6 +52,6 @@ public function main() returns error? {
                 relationships: {betaGroups: {data: [{id: groupId, 'type: "betaGroups"}]}}
             }
         });
-        io:println("Invited tester ", tester.data.attributes?.email, " with id ", tester.data.id);
+        io:println("Added tester ", tester.data.attributes?.email, " to the group with id ", tester.data.id);
     }
 }

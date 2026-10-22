@@ -81,6 +81,7 @@ def refs_in(node, out: set):
                 out.add(v)
             elif k == "mapping" and isinstance(v, dict):
                 out.update(x for x in v.values() if isinstance(x, str))
+                refs_in(v, out)  # a property can be named `mapping` too
             else:
                 refs_in(v, out)
     elif isinstance(node, list):
@@ -399,7 +400,11 @@ def write_yaml(text: str, p: dict) -> str:
         if i + 1 < len(mnode.value):
             end = mnode.value[i + 1][0].start_mark.line
         else:
-            end = v.end_mark.line + (1 if v.end_mark.column > 0 else 0)
+            # a block node's end mark can sit on the next sibling's line (at its indent), so the
+            # end line belongs to this pair only when text precedes the mark there
+            end = v.end_mark.line
+            if end < len(lines) and lines[end][:v.end_mark.column].strip():
+                end += 1
         end = min(end, len(lines))
         while end > start + 1 and is_filler(end - 1):
             end -= 1

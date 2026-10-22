@@ -2,7 +2,7 @@
 
 The `ballerinax/apple.appstore` connector provides practical examples illustrating usage in various scenarios.
 
-1. [Beta testing setup](./beta_testing_setup/beta_testing_setup.md) - Create a TestFlight beta group for an app and invite a tester.
+1. [Beta testing setup](./beta_testing_setup/beta_testing_setup.md) - Create a TestFlight beta group for an app and add a tester to it.
 2. [App review insights](./app_review_insights/app_review_insights.md) - Summarise the latest customer reviews of an app.
 
 ## Prerequisites

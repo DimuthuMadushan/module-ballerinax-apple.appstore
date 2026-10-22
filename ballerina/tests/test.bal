@@ -27,44 +27,80 @@ final Client appStore = check new ({auth: {token}, httpVersion: http:HTTP_1_1}, 
 
 const string TEST_APP_ID = "6740000001";
 
+// A live account may hold no data, so list results are only required to be non-empty against the mock.
+function assertListed(int count) {
+    test:assertTrue(isLiveServer || count > 0, "expected the mock to return at least one item");
+}
+
+// The app to look up: the fixed mock ID, or the first app of the live account (nil when it has none).
+function appId() returns string?|error {
+    if !isLiveServer {
+        return TEST_APP_ID;
+    }
+    AppsResponse apps = check appStore->listApps();
+    return apps.data.length() > 0 ? apps.data[0].id : ();
+}
+
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListApps() returns error? {
     AppsResponse response = check appStore->listApps();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testGetApp() returns error? {
-    AppResponse response = check appStore->getApp(TEST_APP_ID);
+    string? id = check appId();
+    if id is () {
+        return;
+    }
+    AppResponse response = check appStore->getApp(id);
     test:assertEquals(response.data.'type, "apps");
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testUpdateApp() returns error? {
+    if isLiveServer {
+        return;
+    }
     AppResponse response = check appStore->updateApp(TEST_APP_ID, {data: {id: TEST_APP_ID, 'type: "apps", attributes: {primaryLocale: "en-US"}}});
     test:assertTrue(response.data.id.length() > 0);
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListCustomerReviewsForApp() returns error? {
-    CustomerReviewsResponse response = check appStore->listCustomerReviewsForApp(TEST_APP_ID);
-    test:assertTrue(response.data.length() > 0);
+    string? id = check appId();
+    if id is () {
+        return;
+    }
+    CustomerReviewsResponse response = check appStore->listCustomerReviewsForApp(id);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListBuilds() returns error? {
     BuildsResponse response = check appStore->listBuilds();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testGetBuild() returns error? {
-    BuildResponse response = check appStore->getBuild("build-1001");
+    string id = "build-1001";
+    if isLiveServer {
+        BuildsResponse builds = check appStore->listBuilds();
+        if builds.data.length() == 0 {
+            return;
+        }
+        id = builds.data[0].id;
+    }
+    BuildResponse response = check appStore->getBuild(id);
     test:assertEquals(response.data.'type, "builds");
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testUpdateBuild() returns error? {
+    if isLiveServer {
+        return;
+    }
     BuildResponse response = check appStore->updateBuild("build-1001", {data: {id: "build-1001", 'type: "builds", attributes: {expired: false}}});
     test:assertTrue(response.data.id.length() > 0);
 }
@@ -72,7 +108,7 @@ function testUpdateBuild() returns error? {
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListBetaGroups() returns error? {
     BetaGroupsResponse response = check appStore->listBetaGroups();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
@@ -92,8 +128,16 @@ function testCreateBetaGroup() returns error? {
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testGetBetaGroup() returns error? {
-    BetaGroupResponse response = check appStore->getBetaGroup("grp-1001");
-    test:assertEquals(response.data.id, "grp-1001");
+    string id = "grp-1001";
+    if isLiveServer {
+        BetaGroupsResponse groups = check appStore->listBetaGroups();
+        if groups.data.length() == 0 {
+            return;
+        }
+        id = groups.data[0].id;
+    }
+    BetaGroupResponse response = check appStore->getBetaGroup(id);
+    test:assertEquals(response.data.id, id);
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
@@ -124,7 +168,7 @@ function testDeleteBetaGroup() returns error? {
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListBetaTesters() returns error? {
     BetaTestersResponse response = check appStore->listBetaTesters();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
@@ -138,8 +182,16 @@ function testCreateBetaTester() returns error? {
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testGetBetaTester() returns error? {
-    BetaTesterResponse response = check appStore->getBetaTester("tester-1001");
-    test:assertEquals(response.data.id, "tester-1001");
+    string id = "tester-1001";
+    if isLiveServer {
+        BetaTestersResponse testers = check appStore->listBetaTesters();
+        if testers.data.length() == 0 {
+            return;
+        }
+        id = testers.data[0].id;
+    }
+    BetaTesterResponse response = check appStore->getBetaTester(id);
+    test:assertEquals(response.data.id, id);
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
@@ -155,7 +207,7 @@ function testDeleteBetaTester() returns error? {
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListBundleIds() returns error? {
     BundleIdsResponse response = check appStore->listBundleIds();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
@@ -169,8 +221,16 @@ function testCreateBundleId() returns error? {
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testGetBundleId() returns error? {
-    BundleIdResponse response = check appStore->getBundleId("bid-1001");
-    test:assertEquals(response.data.id, "bid-1001");
+    string id = "bid-1001";
+    if isLiveServer {
+        BundleIdsResponse bundleIds = check appStore->listBundleIds();
+        if bundleIds.data.length() == 0 {
+            return;
+        }
+        id = bundleIds.data[0].id;
+    }
+    BundleIdResponse response = check appStore->getBundleId(id);
+    test:assertEquals(response.data.id, id);
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
@@ -186,7 +246,7 @@ function testDeleteBundleId() returns error? {
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListDevices() returns error? {
     DevicesResponse response = check appStore->listDevices();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
@@ -201,17 +261,25 @@ function testCreateDevice() returns error? {
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListUsers() returns error? {
     UsersResponse response = check appStore->listUsers();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testGetUser() returns error? {
-    UserResponse response = check appStore->getUser("user-1001");
-    test:assertEquals(response.data.id, "user-1001");
+    string id = "user-1001";
+    if isLiveServer {
+        UsersResponse users = check appStore->listUsers();
+        if users.data.length() == 0 {
+            return;
+        }
+        id = users.data[0].id;
+    }
+    UserResponse response = check appStore->getUser(id);
+    test:assertEquals(response.data.id, id);
 }
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 function testListCertificates() returns error? {
     CertificatesResponse response = check appStore->listCertificates();
-    test:assertTrue(response.data.length() > 0);
+    assertListed(response.data.length());
 }
